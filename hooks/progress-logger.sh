@@ -122,8 +122,8 @@ if [[ -z "$SUMMARY" ]]; then
     exit 0
 fi
 
-TASK_NAME=$(echo "$SUMMARY" | cut -d'|' -f1)
-DESCRIPTION=$(echo "$SUMMARY" | cut -d'|' -f4)
+TASK_NAME=$(echo "$SUMMARY" | sed 's/|||.*//')
+DESCRIPTION=$(echo "$SUMMARY" | sed 's/.*|||//')
 
 # Format timestamp as MM/DD/YYYY hh:mm AM/PM PST
 TIMESTAMP=$(TZ='America/Los_Angeles' date '+%m/%d/%Y %I:%M %p PST')
@@ -135,7 +135,7 @@ VALUES ('$PROJECT_ID', '$TIMESTAMP', '$TASK_NAME', '$DESCRIPTION', 'done', '', '
 # Cleanup
 rm -f "$SESSION_START_FILE" >/dev/null 2>&1 || true
 
-# Clear activity log entries that were processed
-> "$ACTIVITY_LOG" 2>/dev/null || true
+# Clear processed activity log entries
+: > "$ACTIVITY_LOG" 2>/dev/null || true
 
 exit 0
