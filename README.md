@@ -138,6 +138,17 @@ Query the DB and write the output to `progress.md` in the project repo:
 2. Project notes (from `project_notes` ordered by created_at)
 3. Task log table (from `tasks` ordered by timestamp desc)
 
+## Task Logging Hook
+
+**Log as you go, not after the fact.** After completing each task, insert a row into the DB before moving to the next one. This is an instruction-level behavior — each AI tool's instruction file tells it to do this as part of its workflow.
+
+Why:
+- If the session dies mid-work, everything up to that point is captured
+- No relying on memory or end-of-session summaries
+- The next session queries the DB and knows exactly where things stand
+
+Only log meaningful tasks that leave breadcrumbs — milestones, decisions, integrations, configuration. Not "created a folder." The test: would a future session need to know this happened?
+
 ## AI Instruction File Reference
 
 Add this to your project's AI instruction files so every tool knows where to find it:
@@ -147,6 +158,7 @@ Add this to your project's AI instruction files so every tool knows where to fin
 Global progress DB at ~/.ai/progress.db (SQLite).
 Project ID: YOUR_PROJECT_ID
 See ~/.ai/README.md for schema and usage.
+After completing each meaningful task, insert a row into ~/.ai/progress.db tasks table before moving on.
 ```
 
 **Files to add it to:**
