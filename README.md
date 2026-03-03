@@ -148,14 +148,53 @@ Query the DB and write the output to `progress.md` in the project repo:
 
 ## Task Logging Hook
 
-**Log as you go, not after the fact.** After completing each task, insert a row into the DB before moving to the next one. This is an instruction-level behavior — each AI tool's instruction file tells it to do this as part of its workflow.
+**Log as you go, not after the fact.** After completing each meaningful task, insert a row into the DB before moving to the next one. Only log tasks that leave breadcrumbs — milestones, decisions, integrations, configuration. Not "created a folder."
 
-Why:
-- If the session dies mid-work, everything up to that point is captured
-- No relying on memory or end-of-session summaries
-- The next session queries the DB and knows exactly where things stand
+### Automatic logging via hooks
 
-Only log meaningful tasks that leave breadcrumbs — milestones, decisions, integrations, configuration. Not "created a folder." The test: would a future session need to know this happened?
+Three shell scripts at `~/.ai/hooks/` handle automatic logging (adapted from [yurukusa/claude-code-hooks](https://github.com/yurukusa/claude-code-hooks)):
+
+| Script | Trigger | What it does |
+|--------|---------|-------------|
+| `session-start-marker.sh` | PostToolUse (first call) | Records session start timestamp to /tmp |
+| `activity-logger.sh` | PostToolUse (Edit/Write/Create) | Logs file changes to `~/.ai/hooks/activity-log.jsonl` |
+| `progress-logger.sh` | agentStop/Stop | Reads JSONL, aggregates changes, INSERTs summary into progress.db |
+
+All three are silent — the user sees nothing.
+
+### Hook configuration
+
+**Claude Code** — user-level, all projects automatically:
+- Hooks configured in `~/.claude/settings.json`
+- PostToolUse → session-start-marker.sh + activity-logger.sh
+- Stop → progress-logger.sh
+
+**Copilot CLI** — repo-level, per project:
+- Hooks configured in `.github/hooks/hooks.json` (created by `init-tracker` skill)
+- postToolUse → session-start-marker.sh + activity-logger.sh
+- agentStop → progress-logger.sh
+
+### Display format
+
+When asked to "show the project tracker" or "show progress", display as a markdown table with columns: Timestamp, Task, Description, Status, Takeaways, Gotchas, Notes. Group by project with the goal at the top.
+
+## init-tracker Skill
+
+To register a project (new or existing), run the `init-tracker` skill in any session:
+
+```
+/init-tracker
+```
+
+This skill:
+1. Auto-detects folder, git remote, branch
+2. Asks you for the project goal (mandatory)
+3. Registers the project in `~/.ai/progress.db`
+4. Creates `.github/hooks/hooks.json` for Copilot CLI (if it doesn't exist)
+
+The skill is installed at:
+- `~/.copilot/skills/init-tracker/SKILL.md` (Copilot CLI)
+- `~/.claude/skills/init-tracker/SKILL.md` (Claude Code)
 
 ## AI Instruction File Reference
 
@@ -180,10 +219,14 @@ After completing each meaningful task, insert a row into ~/.ai/progress.db tasks
 
 ```
 ~/.ai/
-├── README.md          # This file — design decisions, schema docs, usage
-├── schema.sql         # Database schema (version controlled)
-├── progress.db        # The SQLite database (local data, gitignored)
-└── .gitignore         # Ignores progress.db
+├── README.md              # This file — design decisions, schema docs, usage
+├── schema.sql             # Database schema (version controlled)
+├── progress.db            # The SQLite database (local data, gitignored)
+├── hooks/                 # Shared hook scripts (both tools use these)
+│   ├── session-start-marker.sh
+│   ├── activity-logger.sh
+│   └── progress-logger.sh
+└── .gitignore             # Ignores progress.db
 ```
 
 ## License
