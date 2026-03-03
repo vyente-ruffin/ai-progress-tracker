@@ -12,14 +12,22 @@
 # ================================================================
 
 INPUT=$(cat)
+
+# Support both Claude Code (tool_name/tool_input) and Copilot CLI (toolName/toolArgs) formats
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+if [[ -z "$FILE_PATH" ]]; then
+    FILE_PATH=$(echo "$INPUT" | jq -r '.toolArgs' 2>/dev/null | jq -r '.path // .file_path // empty' 2>/dev/null)
+fi
 
 if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
 TOOL_INPUT_RAW=$(echo "$INPUT" | jq -r '.tool_input // empty' 2>/dev/null)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
+if [[ -z "$TOOL_INPUT_RAW" ]] || [[ "$TOOL_INPUT_RAW" == "null" ]]; then
+    TOOL_INPUT_RAW=$(echo "$INPUT" | jq -r '.toolArgs' 2>/dev/null)
+fi
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // .toolName // empty' 2>/dev/null)
 TOOL_NAME="${TOOL_NAME:-Edit}"
 
 TS="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
@@ -43,7 +51,7 @@ add = max(0, new_lines - old_lines) if not content else new_lines
 dele = max(0, old_lines - new_lines) if not content else 0
 print(f'ADD_LINES={add}')
 print(f'DEL_LINES={dele}')
-print(f'SUMMARY=\"{os.path.basename(d.get(\"file_path\",\"\"))}\"')
+print(f'SUMMARY=\"{os.path.basename(d.get(\"file_path\", d.get(\"path\", \"\")))}\"')
 " 2>/dev/null || echo "")"
 fi
 
