@@ -72,9 +72,17 @@ sqlite3 ~/.ai/progress.db < ~/.ai/schema.sql
 | gotchas | TEXT | ✅ Default: `''` | What went wrong or was unexpected. Empty if clean. |
 | notes | TEXT | ❌ | Anything else |
 
-## Usage
+## Onboarding a Project (New or Existing)
 
-### Init a new project
+Same process for both. Run once per repo.
+
+1. Start an AI session (Copilot CLI or Claude Code) in the project folder
+2. The AI detects the project isn't registered and asks for the goal
+3. The AI registers it: auto-detects folder, git remote, branch; you provide the goal
+4. For Copilot CLI: the AI creates `.github/hooks/hooks.json` pointing to `~/.ai/hooks/`
+5. From that point forward, all tasks in that project are tracked automatically
+
+### Manual registration (SQL)
 
 ```sql
 INSERT INTO projects (id, name, goal, folder, github_remote, branch)
