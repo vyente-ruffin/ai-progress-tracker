@@ -38,8 +38,19 @@ The database lives on disk (`~/.ai/progress.db`). The dashboard binds to `0.0.0.
 | `preToolUse` | Before any tool runs | Reserved for future policy enforcement |
 | `errorOccurred` | Agent error | Reserved for future error tracking |
 
+## Code Standards
+
+### VII. Context7 First for All Code Changes (NON-NEGOTIABLE)
+Always use the Context7 MCP server for documentation and code lookups before writing or modifying code. Never use web search for code recommendations — search results may be outdated, deprecated, or wrong. Context7 is kept current and returns verified, version-accurate documentation.
+
+### VIII. Comment Every Step (NON-NEGOTIABLE)
+Every block of code must be commented using best practices so any person or agent can follow the logic without guessing. Comments explain the **why**, not just the **what**. If a future session reads this code, it should know exactly what you were thinking and why you made that choice.
+
+### IX. Best Practices Always
+Follow established best practices for every language and framework used. No shortcuts, no "good enough for now." Code should be correct, readable, and maintainable from the first commit.
+
 ## Governance
 
 This constitution supersedes all implementation decisions. Any change that violates these principles requires an explicit amendment with documented rationale. Noise must be justified against Principle III.
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-04 | **Last Amended**: 2026-03-04
+**Version**: 1.1.0 | **Ratified**: 2026-03-04 | **Last Amended**: 2026-03-04
