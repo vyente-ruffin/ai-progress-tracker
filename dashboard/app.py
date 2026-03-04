@@ -30,7 +30,8 @@ def home():
         """
         SELECT p.*,
                (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) AS task_count,
-               (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'done') AS done_count
+               (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'done') AS done_count,
+               (SELECT t.timestamp FROM tasks t WHERE t.project_id = p.id ORDER BY t.id DESC LIMIT 1) AS last_updated
         FROM projects p
         ORDER BY p.created_at DESC
         """

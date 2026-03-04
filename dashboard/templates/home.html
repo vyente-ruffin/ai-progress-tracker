@@ -14,6 +14,9 @@
       {% endif %}
     </div>
     <p class="created">Created {{ p.created_at }}</p>
+    {% if p.last_updated %}
+    <p class="last-updated">Last updated {{ p.last_updated }}</p>
+    {% endif %}
   </a>
   {% endfor %}
 </div>
