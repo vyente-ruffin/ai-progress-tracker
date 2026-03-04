@@ -77,10 +77,11 @@ sqlite3 ~/.ai/progress.db < ~/.ai/schema.sql
 Same process for both. Run once per repo.
 
 1. Start an AI session (Copilot CLI or Claude Code) in the project folder
-2. The AI detects the project isn't registered and asks for the goal
-3. The AI registers it: auto-detects folder, git remote, branch; you provide the goal
-4. For Copilot CLI: the AI creates `.github/hooks/hooks.json` pointing to `~/.ai/hooks/`
-5. From that point forward, all tasks in that project are tracked automatically
+2. Run `/init-tracker`
+3. Provide the project goal (mandatory)
+4. The skill auto-detects folder, git remote, branch; registers in the DB
+5. For Copilot CLI: creates `.github/hooks/hooks.json` pointing to `~/.ai/hooks/`
+6. From that point forward, all tasks in that project are tracked automatically
 
 ### Manual registration (SQL)
 
