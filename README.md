@@ -11,6 +11,16 @@ This system solves that with a single local SQLite database that any AI CLI can 
 2. **What has been done?** (task log with timestamps)
 3. **What did we learn?** (takeaways and gotchas captured per task)
 
+## Origin Story
+
+This project started from two things coming together:
+
+1. **A Reddit post on r/GithubCopilot** — [u/Left-Driver5549](https://www.reddit.com/r/GithubCopilot/) asked about hooks and multi-agent orchestration in the CLI. A GitHub Copilot team member ([u/ryanhecht_github](https://www.reddit.com/r/GithubCopilot/)) revealed that hooks were already supported via `.github/hooks/*.json` — just not yet documented. That unlocked the idea of automated logging at the agent level.
+
+2. **The flywheel problem** — across multiple projects and AI tools, we kept rediscovering the same things. Wrong Slack workspace, wrong embedding dimensions, wrong API endpoint. Every session started from zero and burned tokens re-learning what a previous session already figured out. The original idea was a "learnings-skeptic" agent — a hook that reviews every output and asks *"what can we learn from this?"* — to build a flywheel of knowledge that compounds over time instead of resetting.
+
+The takeaways and gotchas columns in the `tasks` table are a direct result of that thinking: every task captures not just what was done, but what was learned and what went wrong. The goal is that no AI session ever wastes time rediscovering something a previous session already paid for.
+
 ## Design Decisions
 
 - **SQLite over markdown tables** — queryable, sortable, filterable, doesn't get unwieldy as it grows. A markdown table with 7+ columns breaks fast.
