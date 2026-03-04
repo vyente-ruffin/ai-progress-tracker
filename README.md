@@ -167,11 +167,15 @@ Three shell scripts at `~/.ai/hooks/` handle automatic logging (adapted from [yu
 
 | Script | Trigger | What it does |
 |--------|---------|-------------|
-| `session-start-marker.sh` | PostToolUse (first call) | Records session start timestamp to /tmp |
-| `activity-logger.sh` | PostToolUse (Edit/Write/Create) | Logs file changes to `~/.ai/hooks/activity-log.jsonl` |
-| `progress-logger.sh` | agentStop/Stop | Reads JSONL, aggregates changes, INSERTs summary into progress.db |
+| `session-start-marker.sh` | sessionStart | Records session start timestamp from hook input JSON |
+| `activity-logger.sh` | postToolUse (edit/create/write) | Logs file changes to `~/.ai/hooks/activity-log.jsonl` |
+| `progress-logger.sh` | sessionEnd | Reads JSONL, aggregates changes, INSERTs summary into progress.db |
 
 All three are silent — the user sees nothing.
+
+### Canonical hooks template
+
+The single source of truth for hooks configuration is `~/.ai/hooks/hooks-template.json`. The `init-tracker` skill copies this file to `.github/hooks/hooks.json` in each project. When the hooks format changes, update the template once — the next `/init-tracker` run on any project picks up the latest.
 
 ### Hook configuration
 
@@ -181,9 +185,10 @@ All three are silent — the user sees nothing.
 - Stop → progress-logger.sh
 
 **Copilot CLI** — repo-level, per project:
-- Hooks configured in `.github/hooks/hooks.json` (created by `init-tracker` skill)
-- postToolUse → session-start-marker.sh + activity-logger.sh
-- agentStop → progress-logger.sh
+- Hooks configured in `.github/hooks/hooks.json` (copied from `~/.ai/hooks/hooks-template.json` by `init-tracker`)
+- sessionStart → session-start-marker.sh
+- postToolUse → activity-logger.sh
+- sessionEnd → progress-logger.sh
 
 ### Display format
 
@@ -266,7 +271,9 @@ The dashboard reads `~/.ai/progress.db` in read-only mode. All data entry still 
 ├── hooks/                 # Shared hook scripts (both tools use these)
 │   ├── session-start-marker.sh
 │   ├── activity-logger.sh
-│   └── progress-logger.sh
+│   ├── progress-logger.sh
+│   ├── health-check.sh    # Cron job (every 5 min) — checks dashboard, hooks, DB
+│   └── hooks-template.json # Canonical hooks.json — single source of truth
 ├── dashboard/             # Web dashboard (read-only)
 │   ├── app.py             # Flask server (port 9847)
 │   ├── run.sh             # One-command launcher
