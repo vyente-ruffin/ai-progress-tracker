@@ -2,22 +2,41 @@
 # ================================================================
 # session-start-marker.sh — Session Start Time Recorder
 # ================================================================
-# Records timestamp on first tool invocation of a session.
-# Used by progress-logger.sh to calculate session duration
-# and filter activity logs to the current session.
+# Records session start timestamp when triggered by the sessionStart
+# hook event. Uses the timestamp from the hook input JSON rather than
+# relying on a /tmp marker file.
 #
-# TRIGGER: PostToolUse (all tools)
-# MATCHER: "" (every tool invocation)
+# TRIGGER: sessionStart
+# INPUT: JSON with timestamp, cwd, source, initialPrompt
+# OUTPUT: Writes epoch timestamp to /tmp/ai-session-start-ts-{PID}
+#
+# Per official GitHub Copilot CLI hooks docs:
+# https://docs.github.com/en/copilot/reference/hooks-configuration
 #
 # Adapted from yurukusa/claude-code-hooks (MIT)
 # ================================================================
 
+# -- Read the JSON input from stdin (Copilot CLI pipes hook context) --
+INPUT=$(cat)
+
+# -- Use a stable session ID based on parent process --
 SESSION_ID="${PPID:-$$}"
 START_FILE="/tmp/ai-session-start-ts-${SESSION_ID}"
 
+# -- Skip if we already recorded a start for this session --
 if [[ -f "$START_FILE" ]]; then
     exit 0
 fi
 
-date +%s > "$START_FILE"
+# -- Extract timestamp from hook input JSON (milliseconds → seconds) --
+# Falls back to current epoch if jq fails or input is empty
+TIMESTAMP_MS=$(echo "$INPUT" | jq -r '.timestamp // empty' 2>/dev/null)
+if [[ -n "$TIMESTAMP_MS" ]]; then
+    # Convert milliseconds to seconds
+    echo $(( TIMESTAMP_MS / 1000 )) > "$START_FILE"
+else
+    # Fallback: use current time if no timestamp in input
+    date +%s > "$START_FILE"
+fi
+
 exit 0
