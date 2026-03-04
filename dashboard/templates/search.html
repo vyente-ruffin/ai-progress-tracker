@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Search — AI Progress Tracker{% endblock %}
+{% block content %}
+<h1>Search Tasks</h1>
+{% if query %}
+<p>{{ results | length }} result{{ 's' if results | length != 1 }} for <strong>"{{ query }}"</strong></p>
+  {% if results %}
+  <table>
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Timestamp</th>
+        <th>Task</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Takeaways</th>
+        <th>Gotchas</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in results %}
+      <tr>
+        <td><a href="{{ url_for('project_detail', project_id=t.project_id) }}">{{ t.project_name }}</a></td>
+        <td class="nowrap">{{ t.timestamp }}</td>
+        <td><strong>{{ t.task_name }}</strong></td>
+        <td>{{ t.description }}</td>
+        <td><span class="status status-{{ t.status }}">{{ t.status }}</span></td>
+        <td>{{ t.takeaways if t.takeaways else '—' }}</td>
+        <td>{{ t.gotchas if t.gotchas else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No results found.</p>
+  {% endif %}
+{% else %}
+<p class="empty">Enter a search term above.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AI Progress Tracker{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('home') }}" class="logo">⚡ AI Progress Tracker</a>
+    <form action="{{ url_for('search') }}" method="get" class="search-form">
+      <input type="text" name="q" placeholder="Search tasks…" value="{{ request.args.get('q', '') }}">
+      <button type="submit">Search</button>
+    </form>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <p>Reading from <code>~/.ai/progress.db</code> · Port 9847</p>
+  </footer>
+</body>
+</html>

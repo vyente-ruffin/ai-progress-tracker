@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Projects — AI Progress Tracker{% endblock %}
+{% block content %}
+<h1>Projects</h1>
+<div class="project-grid">
+  {% for p in projects %}
+  <a href="{{ url_for('project_detail', project_id=p.id) }}" class="project-card">
+    <h2>{{ p.name }}</h2>
+    <p class="goal">{{ p.goal }}</p>
+    <div class="meta">
+      <span class="badge">{{ p.done_count }}/{{ p.task_count }} tasks done</span>
+      {% if p.github_remote %}
+      <span class="remote">{{ p.github_remote }}</span>
+      {% endif %}
+    </div>
+    <p class="created">Created {{ p.created_at }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,3 +1,7 @@
 # Local data
 progress.db
 diagram.png
+
+.venv
+dashboard/.venv
+__pycache__

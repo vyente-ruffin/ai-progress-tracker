@@ -216,6 +216,36 @@ After completing each meaningful task, insert a row into ~/.ai/progress.db tasks
 - `.cursorrules` or `.cursor/rules/` (Cursor)
 - `.windsurfrules` (Windsurf)
 
+## Dashboard
+
+A read-only web UI for browsing projects, tasks, and notes from any device on your local network.
+
+### Quick Start
+
+```bash
+bash ~/.ai/dashboard/run.sh
+```
+
+This will:
+1. Create a Python virtual environment (first run only)
+2. Install Flask (first run only)
+3. Start the dashboard on port **9847**
+
+### Access
+
+- **This machine:** http://localhost:9847
+- **Any device on your network:** http://YOUR_LAN_IP:9847
+
+The dashboard reads `~/.ai/progress.db` in read-only mode. All data entry still happens through AI sessions.
+
+### Pages
+
+| Page | URL | What it shows |
+|------|-----|---------------|
+| Home | `/` | All projects with task counts |
+| Project | `/project/<id>` | Full task log, notes, metadata |
+| Search | `/search?q=<term>` | Cross-project task search |
+
 ## File Structure
 
 ```
@@ -227,7 +257,13 @@ After completing each meaningful task, insert a row into ~/.ai/progress.db tasks
 │   ├── session-start-marker.sh
 │   ├── activity-logger.sh
 │   └── progress-logger.sh
-└── .gitignore             # Ignores progress.db
+├── dashboard/             # Web dashboard (read-only)
+│   ├── app.py             # Flask server (port 9847)
+│   ├── run.sh             # One-command launcher
+│   ├── requirements.txt   # Python dependencies
+│   ├── static/style.css   # Dark theme styling
+│   └── templates/         # Jinja2 templates
+└── .gitignore             # Ignores progress.db, .venv
 ```
 
 ## License

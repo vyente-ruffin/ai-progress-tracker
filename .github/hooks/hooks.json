@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "bash ~/.ai/hooks/session-start-marker.sh",
+        "timeoutSec": 5
+      },
+      {
+        "type": "command",
+        "bash": "bash ~/.ai/hooks/activity-logger.sh",
+        "timeoutSec": 10
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "bash ~/.ai/hooks/progress-logger.sh",
+        "timeoutSec": 15
+      }
+    ]
+  }
+}

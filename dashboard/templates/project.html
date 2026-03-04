@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — AI Progress Tracker{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('home') }}">← All Projects</a>
+</div>
+
+<header class="project-header">
+  <h1>{{ project.name }}</h1>
+  <p class="goal">{{ project.goal }}</p>
+  <div class="meta">
+    <span><strong>Folder:</strong> <code>{{ project.folder }}</code></span>
+    {% if project.github_remote %}
+    <span><strong>Remote:</strong> {{ project.github_remote }}</span>
+    {% endif %}
+    {% if project.branch %}
+    <span><strong>Branch:</strong> {{ project.branch }}</span>
+    {% endif %}
+    {% if related %}
+    <span><strong>Related to:</strong> <a href="{{ url_for('project_detail', project_id=related.id) }}">{{ related.name }}</a></span>
+    {% endif %}
+    <span><strong>Created:</strong> {{ project.created_at }}</span>
+  </div>
+</header>
+
+{% if notes %}
+<section>
+  <h2>Notes</h2>
+  {% for note in notes %}
+  <div class="note-card">
+    <p>{{ note.note }}</p>
+    <span class="timestamp">{{ note.created_at }}</span>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section>
+  <h2>Task Log ({{ tasks | length }})</h2>
+  {% if tasks %}
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Task</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Takeaways</th>
+        <th>Gotchas</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tasks %}
+      <tr>
+        <td class="nowrap">{{ t.timestamp }}</td>
+        <td><strong>{{ t.task_name }}</strong></td>
+        <td>{{ t.description }}</td>
+        <td><span class="status status-{{ t.status }}">{{ t.status }}</span></td>
+        <td>{{ t.takeaways if t.takeaways else '—' }}</td>
+        <td>{{ t.gotchas if t.gotchas else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No tasks logged yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
