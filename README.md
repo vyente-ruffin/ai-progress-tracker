@@ -157,21 +157,31 @@ Query the DB and write the output to `progress.md` in the project repo:
 2. Project notes (from `project_notes` ordered by created_at)
 3. Task log table (from `tasks` ordered by timestamp desc)
 
-## Task Logging Hook
+## Task Logging
 
-**Log as you go, not after the fact.** After completing each meaningful task, insert a row into the DB before moving to the next one. Only log tasks that leave breadcrumbs — milestones, decisions, integrations, configuration. Not "created a folder."
+**Hooks are the ONLY writer to the database.** Agents never INSERT into the tasks table directly — this prevents wrong project_id attribution. The hook pipeline is deterministic: it matches `pwd` against registered project folders and skips unregistered folders entirely.
 
-### Automatic logging via hooks
+### How it works
 
-Three shell scripts at `~/.ai/hooks/` handle automatic logging (adapted from [yurukusa/claude-code-hooks](https://github.com/yurukusa/claude-code-hooks)):
+On session end, `progress-logger.sh` builds a task entry from two data sources:
+
+1. **Copilot CLI session state** (primary) — reads `workspace.yaml` for the session summary, and the latest checkpoint for the overview, takeaways, and gotchas. This is the rich context: *why* the change was made and *what was learned*.
+2. **Activity log** (supplementary) — file change details logged during the session by `activity-logger.sh`. This is the *what*: which files changed and by how many lines.
+
+If session state is unavailable (e.g., Claude Code sessions), it falls back to the activity log only.
+
+### Hook scripts
+
+Four shell scripts at `~/.ai/hooks/` (adapted from [yurukusa/claude-code-hooks](https://github.com/yurukusa/claude-code-hooks)):
 
 | Script | Trigger | What it does |
 |--------|---------|-------------|
 | `session-start-marker.sh` | sessionStart | Records session start timestamp from hook input JSON |
 | `activity-logger.sh` | postToolUse (edit/create/write) | Logs file changes to `~/.ai/hooks/activity-log.jsonl` |
-| `progress-logger.sh` | sessionEnd | Reads JSONL, aggregates changes, INSERTs summary into progress.db |
+| `progress-logger.sh` | sessionEnd / Stop | Reads session state + activity log, INSERTs summary into progress.db |
+| `health-check.sh` | cron (every 5 min) | Checks dashboard, activity log, DB, and hooks staleness |
 
-All three are silent — the user sees nothing.
+All hook scripts are silent — the user sees nothing.
 
 ### Canonical hooks template
 
@@ -183,12 +193,14 @@ The single source of truth for hooks configuration is `~/.ai/hooks/hooks-templat
 - Hooks configured in `~/.claude/settings.json`
 - PostToolUse → session-start-marker.sh + activity-logger.sh
 - Stop → progress-logger.sh
+- Note: Claude Code sessions get the activity log fallback (file diffs) since Claude Code does not store session state in the same format as Copilot CLI.
 
 **Copilot CLI** — repo-level, per project:
 - Hooks configured in `.github/hooks/hooks.json` (copied from `~/.ai/hooks/hooks-template.json` by `init-tracker`)
 - sessionStart → session-start-marker.sh
 - postToolUse → activity-logger.sh
 - sessionEnd → progress-logger.sh
+- Copilot CLI sessions get full context: session summary + checkpoint overview + takeaways + gotchas.
 
 ### Display format
 
@@ -221,7 +233,7 @@ Add this to your project's AI instruction files so every tool knows where to fin
 Global progress DB at ~/.ai/progress.db (SQLite).
 Project ID: YOUR_PROJECT_ID
 See ~/.ai/README.md for schema and usage.
-After completing each meaningful task, insert a row into ~/.ai/progress.db tasks table before moving on.
+Do NOT manually INSERT into the tasks table. Task logging is handled automatically by hooks.
 ```
 
 **Files to add it to:**
